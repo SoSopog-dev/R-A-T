@@ -2,13 +2,12 @@ import os
 import socket
 import pyautogui
 import time
- 
 #127.0.0.1
 #10.68.72.124
 #10.81.68.126
 s = socket.socket()
 port = 8080
-host = "10.81.68.126"
+host = "192.168.0.116"
 connected = False
 while not connected:
     try:
@@ -44,7 +43,7 @@ while 1:
         s.send(command.encode())
         run = True
         print("\n stream")
-        answer = ""
+        answer = " "
         timeouttimer = 0
         while run:
             s.settimeout(10)
@@ -53,9 +52,12 @@ while 1:
             except:
                 print("annswer timed out")
                 timeouttimer += 1
+                
             if timeouttimer == 300:
                 run = False
                 timeouttimer = 0
+                
+            
             if answer == "send size":
                 try:
                     screenshot = pyautogui.screenshot()
@@ -71,18 +73,48 @@ while 1:
                     print(size)
                     s.send(str(size).encode())
                     print("sendt size")
-                    answer = ""
+                    answer = " "
                     timeouittimer = 0 
                 except:
                     print("somthing went wrong")
-            elif answer != "send size":
+
+            elif answer.isdigit():
                 try:
                     if int(answer) == size:
                         s.send(bytes)
                     else:
                         print("not write size, to send image")
+
                 except:
-                    print("could not int the answer")
+                    print("was not able to turn answer to a integer")
+                    
+            elif answer == "click":
+                pyautogui.click()
+
+            elif " " in answer:
+                try:
+                    lenth = 0
+                    number = answer.find(" ")
+                    if number != -1:
+                        answer = list(answer)
+                        x = answer[0:number]
+                        x = "".join(x)
+                        x = int(x)
+                        y = answer[number:len(answer)-1]
+                        y = "".join(y)
+                        y = int(y)
+                        pyautogui.moveTo(x,y)
+                        print("moved mouse")
+                        answer = "".join(answer)
+                    else:
+                        answer = "".join(answer)
+                except:
+                    answer = "".join(answer)
+                    print("could not not able to turn answer to list or list index out of range")
+
+
+
+
     elif command == "bat":
         run = True
         while run:
